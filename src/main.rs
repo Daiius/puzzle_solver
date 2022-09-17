@@ -17,13 +17,15 @@ struct Args {
     input: Vec<usize>
 }
 
-mod puzzle;
+mod common;
 mod solver;
+mod solver_15;
 
 fn main() {
     let args = Args::parse();
 
     println!("{:?}", args);
 
-    solver::solve(&args.puzzle_type, args.input);
+    solver::solve(&args.puzzle_type, &args.input);
 }
+
