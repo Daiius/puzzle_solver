@@ -10,6 +10,15 @@ pub fn solve(puzzle_type: &str, input: &Data) {
         "15" => solver_15::solve(input),
         _    => { println!("Unknown type: {}", puzzle_type); None }
     };
-    println!("{:?}", result);
+    match result {
+        Some(patterns) => {
+            for p in &patterns {
+                println!("{}", p);
+            }
+        },
+        _ => {
+            println!("not found...");
+        }
+    }
 }
 

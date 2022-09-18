@@ -2,9 +2,10 @@
 // 
 //
 
+use std::fmt;
 use crate::common::{ Data, Num };
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Pattern {
     data: Data,
     last_move: Move
@@ -69,6 +70,17 @@ impl Pattern {
     }
 }
 
+impl fmt::Display for Pattern {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let n = self.data.len() / 2;
+        for (i, e) in self.data.iter().enumerate() {
+            write!(f, "{:02},", e)?;
+            if i % n == n-1 { write!(f, "\n")?; }
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Move {
     from: Num,
@@ -94,7 +106,7 @@ pub fn solve(input: &Data) -> Option<Vec<Pattern>> {
     let target = Pattern::default(input.len() / 2);
     let mut result: Vec<Pattern> = vec![];
     let mut root = PatternNode { pattern: target.clone(), children: vec![]};
-    println!("{:?}", target);
+    println!("{}", target);
 
     let max_depth = 35;
     for depth in 0..max_depth {
