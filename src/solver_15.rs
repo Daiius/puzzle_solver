@@ -75,7 +75,11 @@ impl fmt::Display for Pattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let n = self.data.len() / 2;
         for (i, e) in self.data.iter().enumerate() {
-            write!(f, "{:02},", e)?;
+            if *e == 0 {
+                write!(f, "__ ")?;
+            } else {
+                write!(f, "{:02} ", e)?;
+            }
             if i % n == n-1 { write!(f, "\n")?; }
         }
         Ok(())
