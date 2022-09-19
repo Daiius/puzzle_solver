@@ -1,5 +1,5 @@
 //
-// 
+// A solver for 15-puzzle
 //
 
 use std::fmt;
@@ -57,6 +57,7 @@ impl Pattern {
                 patterns.push(Pattern { data: d, last_move: Move { from: pos, to: left_pos}});
             }
         }
+        // right
         if x < n-1 {
             let right_pos = pos + 1;
             if self.last_move.from != right_pos {
@@ -112,7 +113,6 @@ pub fn solve(input: &Data) -> Option<Vec<Pattern>> {
     for depth in 0..max_depth {
         println!("depth: {}", depth);
         if search_and_extend_tree(&mut root, input, depth, &mut result) {
-
             return Some(result);
         }
     }
@@ -145,6 +145,7 @@ fn search_and_extend_tree(
         }
     }
 
+    // search into child nodes
     for child in &mut node.children {
         if search_and_extend_tree(child, target, depth - 1, result) {
             result.push(node.pattern.clone());
