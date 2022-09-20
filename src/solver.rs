@@ -2,8 +2,19 @@
 // Puzzle solver
 //
 
-use crate::common::{ Data };
-use crate::solver_15;
+//
+// from solver.rs, ./solver/* is visible.
+// "mod common" means ./solver/common.rs
+// "mod solver_15" means ./solver/solver_15.rs
+// ...i guess
+//
+// "pub" enable re-export of internal sources
+//
+pub mod common;
+pub mod solver_15;
+
+// ./solver/* is visible.
+use common::{ Data };
 
 pub fn solve(puzzle_type: &str, input: &Data) {
     let result = match puzzle_type {
@@ -16,7 +27,7 @@ pub fn solve(puzzle_type: &str, input: &Data) {
                 println!("{}", p);
             }
         },
-        _ => {
+        None => {
             println!("not found...");
         }
     }

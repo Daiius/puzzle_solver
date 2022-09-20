@@ -17,9 +17,7 @@ struct Args {
     input: Vec<usize>
 }
 
-mod common;
 mod solver;
-mod solver_15;
 
 fn main() {
     let args = Args::parse();
