@@ -17,6 +17,8 @@ struct Args {
     input: Vec<usize>
 }
 
+// from main.rs, top level sources are visible.
+// "mod solver" refers to ./solver.rs
 mod solver;
 
 fn main() {

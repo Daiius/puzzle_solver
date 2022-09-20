@@ -4,8 +4,8 @@
 
 use std::fmt;
 //
-// from solver_15.rs, solver/solver_15/* is visible.
-// to use ../solver/common.rs, "super::" should be specified.
+// from solver_15.rs, ./solver/solver_15/* is visible.
+// to use ./solver/common.rs, "super::" should be specified.
 // ...i guess
 //
 use super::common::{ Data, Num };
