@@ -12,15 +12,37 @@
 //
 pub mod common;
 pub mod solver_15;
+pub mod solver_slide;
 
 // ./solver/* is visible.
 use common::{ Data };
 
 pub fn solve(puzzle_type: &str, input: &Data) {
-    let result = match puzzle_type {
-        "15" => solver_15::solve(input),
-        _    => { println!("Unknown type: {}", puzzle_type); None }
+    match puzzle_type {
+        "15" => call_solver_15(input),
+        "s"  => call_solver_slide(input),
+        _    => {
+            println!("Unknown type: {}", puzzle_type);
+        }
     };
+}
+
+fn call_solver_15(input: &Data) {
+    let result = solver_15::solve(input);
+    match result {
+        Some(patterns) => {
+            for p in &patterns {
+                println!("{}", p);
+            }
+        },
+        None => {
+            println!("not found...");
+        }
+    }
+}
+
+fn call_solver_slide(input: &Data) {
+    let result = solver_slide::solve(input);
     match result {
         Some(patterns) => {
             for p in &patterns {
