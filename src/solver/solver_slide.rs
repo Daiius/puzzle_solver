@@ -54,23 +54,19 @@ impl Pattern {
         match m.direction {
             Direction::Horizontal => {
                 let shift_index = m.index * n;
-                let shift_amount = m.distance % n;
-                let tmp = result.data[shift_index];
-                for i in 0..n-1 {
+                let shift_amount = n - m.distance;
+                for i in 0..n {
                     result.data[shift_index+i]
-                        = result.data[shift_index + (shift_amount+i) % n];
+                        = self.data[shift_index + (shift_amount+i) % n];
                 }
-                result.data[shift_index + (shift_amount + n - 1) % n ] = tmp;
             },
             Direction::Vertical => {
                 let shift_index = m.index;
-                let shift_amount = m.distance % n;
-                let tmp = result.data[shift_index];
-                for i in 0..n-1 {
+                let shift_amount = n - m.distance;
+                for i in 0..n {
                     result.data[shift_index + i * n]
-                        = result.data[shift_index + ((i+shift_amount) % n)*n];
+                        = self.data[shift_index + ((i+shift_amount) % n)*n];
                 }
-                result.data[shift_index + ((n-1 + shift_amount)%n)*n] = tmp;
             }
         }
 
@@ -92,9 +88,9 @@ impl Pattern {
             .filter(|m| *m != self.last_move);
         let patterns: Vec<Pattern> = moves.map(|m| self.apply_move(&m)).collect();
 
-        for p in &patterns {
-            println!("{}", p);
-        }
+        //for p in &patterns {
+        //    println!("{}", p);
+        //}
         
         patterns
     }
@@ -127,6 +123,11 @@ impl fmt::Display for Pattern {
     }
 }
 
+struct PatternNode {
+    pattern: Pattern,
+    children: Vec<PatternNode>
+}
+
 pub fn solve(input: &Data) -> Option<Vec<Pattern>> {
     
     let target = Pattern::default(input.len());
@@ -135,7 +136,44 @@ pub fn solve(input: &Data) -> Option<Vec<Pattern>> {
     let start = Pattern::from_input(input);
     println!("start:\n{}", start);
 
-    let patterns = start.possible_patterns();
+    //let patterns = start.possible_patterns();
+    
+    let mut root = PatternNode { pattern: start, children: vec![] };
+    let mut result: Vec<Pattern> = vec![];
+    for depth in 0..(80/target.data.len()) {
+        println!("depth: {}", depth);
+
+        if search_and_build_tree(&mut root, &target.data, depth, &mut result) {
+            println!("found!");
+            return Some(result);
+        }
+    }
 
     None
 }
+
+fn search_and_build_tree(node: &mut PatternNode, target: &Data, depth: usize, result: &mut Vec<Pattern>) -> bool {
+    if depth <= 0 {
+        if node.pattern.data == *target {
+            result.push(node.pattern.clone());
+            return true;
+        }
+        return false;
+    }
+
+    if node.children.len() <= 0 {
+        for p in node.pattern.possible_patterns() {
+            node.children.push(PatternNode { pattern: p, children: vec![] });
+        }
+    }
+
+    for p in &mut node.children {
+        if search_and_build_tree(p, target, depth - 1, result) {
+            result.push(node.pattern.clone());
+            return true;
+        }
+    }
+
+    false
+}
+
