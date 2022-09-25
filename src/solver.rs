@@ -12,7 +12,7 @@
 //
 pub mod common;
 pub mod solver_15;
-pub mod solver_slide;
+pub mod solver_torous;
 
 // ./solver/* is visible.
 use common::{ Data };
@@ -20,7 +20,7 @@ use common::{ Data };
 pub fn solve(puzzle_type: &str, input: &Data) {
     match puzzle_type {
         "15" => call_solver_15(input),
-        "s"  => call_solver_slide(input),
+        "t"  => call_solver_torous(input),
         _    => {
             println!("Unknown type: {}", puzzle_type);
         }
@@ -41,8 +41,8 @@ fn call_solver_15(input: &Data) {
     }
 }
 
-fn call_solver_slide(input: &Data) {
-    let result = solver_slide::solve(input);
+fn call_solver_torous(input: &Data) {
+    let result = solver_torous::solve(input);
     match result {
         Some(patterns) => {
             for p in &patterns {
