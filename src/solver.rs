@@ -12,7 +12,7 @@
 //
 pub mod common;
 pub mod solver_15;
-pub mod solver_torous;
+pub mod solver_torus;
 
 // ./solver/* is visible.
 use common::{ Data };
