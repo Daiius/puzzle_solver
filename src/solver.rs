@@ -20,7 +20,7 @@ use common::{ Data };
 pub fn solve(puzzle_type: &str, input: &Data) {
     match puzzle_type {
         "15" => call_solver_15(input),
-        "t"  => call_solver_torous(input),
+        "t"  => call_solver_torus(input),
         _    => {
             println!("Unknown type: {}", puzzle_type);
         }
@@ -41,8 +41,8 @@ fn call_solver_15(input: &Data) {
     }
 }
 
-fn call_solver_torous(input: &Data) {
-    let result = solver_torous::solve(input);
+fn call_solver_torus(input: &Data) {
+    let result = solver_torus::solve(input);
     match result {
         Some(patterns) => {
             for p in &patterns {
