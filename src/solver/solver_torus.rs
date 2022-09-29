@@ -140,7 +140,7 @@ pub fn solve(input: &Data) -> Option<Vec<Pattern>> {
     
     let mut root = PatternNode { pattern: start, children: vec![] };
     let mut result: Vec<Pattern> = vec![];
-    for depth in 0..(80/target.data.len()) {
+    for depth in 0..(120/target.data.len()) {
         println!("depth: {}", depth);
 
         if search_and_build_tree(&mut root, &target.data, depth, &mut result) {
