@@ -3,8 +3,8 @@ use std::fmt;
 
 use itertools;
 
-use super::common::{ Data };
-//type Data = Vec<Vec<usize>>;
+//use super::common::{ Data };
+type Data = Vec<u8>;
 
 #[derive(Clone)]
 pub struct Pattern {
@@ -28,15 +28,19 @@ pub enum Direction {
 
 impl Pattern {
     pub fn default(n: usize) -> Pattern {
-        Pattern {
-            data: (1..=n*n).collect(), 
-            n: n,
+        let n = n as u8;
+        let mut pattern = Pattern {
+            data: Vec::with_capacity(n as usize),
+            n: n as usize,
             last_move: Move {
                 direction: Direction::Horizontal,
                 index: 0,
                 distance: 0
             }
-        }
+        };
+        pattern.data = (1..=n*n).collect();
+
+        pattern
     }
 
     pub fn from_input(input: &Data) -> Pattern {
@@ -128,12 +132,14 @@ struct PatternNode {
     children: Vec<PatternNode>
 }
 
-pub fn solve(input: &Data) -> Option<Vec<Pattern>> {
+pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
+
+    let input: Vec<u8> = input.iter().map(|&x| x as u8).collect();
     
     let target = Pattern::default(input.len());
     println!("target:\n{}", target);
 
-    let start = Pattern::from_input(input);
+    let start = Pattern::from_input(&input);
     println!("start:\n{}", start);
 
     //let patterns = start.possible_patterns();
