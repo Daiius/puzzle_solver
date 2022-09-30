@@ -4,7 +4,7 @@ use std::fmt;
 use itertools;
 
 //use super::common::{ Data };
-type Data = Vec<u8>;
+type Data = Vec<usize>;
 
 #[derive(Clone)]
 pub struct Pattern {
@@ -28,17 +28,20 @@ pub enum Direction {
 
 impl Pattern {
     pub fn default(n: usize) -> Pattern {
-        let n = n as u8;
         let mut pattern = Pattern {
-            data: Vec::with_capacity(n as usize),
-            n: n as usize,
+            data: vec![0; n],
+            n: n,
             last_move: Move {
                 direction: Direction::Horizontal,
                 index: 0,
                 distance: 0
             }
         };
-        pattern.data = (1..=n*n).collect();
+        for i in 0..n {
+            for j in 0..n {
+                pattern.data[i] |= (i*n+j+1) << 8*j;
+            }
+        }
 
         pattern
     }
@@ -46,8 +49,9 @@ impl Pattern {
     pub fn from_input(input: &Data) -> Pattern {
         let n = input.len();
         let mut base = Pattern::default(n);
+        base.data[n-1] = 0;
         for i in 0..n {
-            base.data[i+n*n-n] = input[i];
+            base.data[n-1] |= input[i] << 8*i;
         }
         base
     }
@@ -57,19 +61,21 @@ impl Pattern {
         let n = self.n;
         match m.direction {
             Direction::Horizontal => {
-                let shift_index = m.index * n;
+                let shift_index = m.index;
                 let shift_amount = n - m.distance;
-                for i in 0..n {
-                    result.data[shift_index+i]
-                        = self.data[shift_index + (shift_amount+i) % n];
-                }
+                result.data[shift_index]  = 0;
+                result.data[shift_index] |= self.data[shift_index] << 8*shift_amount;
+                result.data[shift_index] |= self.data[shift_index] >> (8*(n - shift_amount));
             },
             Direction::Vertical => {
                 let shift_index = m.index;
                 let shift_amount = n - m.distance;
                 for i in 0..n {
+                    result.data[i] &= !(0xff << shift_amount * 8);
+                }
+                for i in 0..n {
                     result.data[shift_index + i * n]
-                        = self.data[shift_index + ((i+shift_amount) % n)*n];
+                        |= self.data[shift_index + ((i+shift_amount) % n)*n] & !(0xff << shift_amount * 8);
                 }
             }
         }
@@ -114,8 +120,10 @@ impl fmt::Display for Pattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let n = self.n;
         for (i, e) in self.data.iter().enumerate() {
-            write!(f, "{:02} ", e)?;
-            if i % n == n-1 { write!(f, "\n")?; }
+            for j in 0..n {
+                write!(f, "{:02} ", (e >> 8*i)&0xff)?;
+            }
+            write!(f, "\n")?;
         }
         match self.last_move.direction {
             Direction::Horizontal => write!(f, "H,")?,
@@ -134,8 +142,6 @@ struct PatternNode {
 
 pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
 
-    let input: Vec<u8> = input.iter().map(|&x| x as u8).collect();
-    
     let target = Pattern::default(input.len());
     println!("target:\n{}", target);
 
