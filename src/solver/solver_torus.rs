@@ -66,16 +66,17 @@ impl Pattern {
                 result.data[shift_index]  = 0;
                 result.data[shift_index] |= self.data[shift_index] << 8*shift_amount;
                 result.data[shift_index] |= self.data[shift_index] >> (8*(n - shift_amount));
+                result.data[shift_index] &= (2_i32.pow((n*8).try_into().unwrap()) - 1) as usize;
             },
             Direction::Vertical => {
                 let shift_index = m.index;
                 let shift_amount = n - m.distance;
                 for i in 0..n {
-                    result.data[i] &= !(0xff << shift_amount * 8);
+                    result.data[i] &= !(0xff << shift_index * 8);
                 }
                 for i in 0..n {
-                    result.data[shift_index + i * n]
-                        |= self.data[shift_index + ((i+shift_amount) % n)*n] & !(0xff << shift_amount * 8);
+                    result.data[i]
+                        |= self.data[(i+shift_amount) % n] & (0xff << shift_index * 8);
                 }
             }
         }
@@ -121,7 +122,7 @@ impl fmt::Display for Pattern {
         let n = self.n;
         for (i, e) in self.data.iter().enumerate() {
             for j in 0..n {
-                write!(f, "{:02} ", (e >> 8*i)&0xff)?;
+                write!(f, "{:02} ", (e >> 8*j)&0xff)?;
             }
             write!(f, "\n")?;
         }
@@ -149,6 +150,11 @@ pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
     println!("start:\n{}", start);
 
     //let patterns = start.possible_patterns();
+    
+    //for p in start.possible_patterns() {
+    //    println!("{}", p);
+    //}
+    //return None;
     
     let mut root = PatternNode { pattern: start, children: vec![] };
     let mut result: Vec<Pattern> = vec![];
