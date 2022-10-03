@@ -179,6 +179,8 @@ fn search_and_build_tree(node: &mut PatternNode, target: &Data, depth: usize, re
         return false;
     }
 
+    // TODO : too much memory consumption
+    //        trying sequencial move generation.
     if node.children.len() <= 0 {
         for p in node.pattern.possible_patterns() {
             node.children.push(PatternNode { pattern: p, children: vec![] });
