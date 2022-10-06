@@ -86,24 +86,18 @@ impl Pattern {
         result
     }
 
-    pub fn possible_patterns(&self) -> Vec<Pattern> {
+    pub fn possible_patterns(&self) -> impl Iterator<Item = Pattern> + '_ {
         let n = self.n;
-        let indices: Vec<usize> = (0..n).collect();
-        let directions = [Direction::Horizontal, Direction::Vertical];
-        let distances: Vec<usize> = (1..n).collect();
+        let indices = 0..n;
+        static DIRECTIONS: [Direction; 2] = [Direction::Horizontal, Direction::Vertical];
+        let distances = 1..n;
 
-        let moves = itertools::iproduct!(
-            directions.iter(), indices.iter(), distances.iter()
+        itertools::iproduct!(
+            DIRECTIONS.iter(), indices, distances
             )
-            .map(|(&direction, &index, &distance)| Move { direction, index, distance })
-            .filter(|m| *m != self.last_move);
-        let patterns: Vec<Pattern> = moves.map(|m| self.apply_move(&m)).collect();
-
-        //for p in &patterns {
-        //    println!("{}", p);
-        //}
-        
-        patterns
+            .map(|(&direction, index, distance)| Move { direction, index, distance })
+            .filter(|m| *m != self.last_move)
+            .map(|m| self.apply_move(&m))
     }
 }
 
@@ -161,7 +155,7 @@ pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
     for depth in 0..(120/target.data.len()) {
         println!("depth: {}", depth);
 
-        if search_and_build_tree(&mut root, &target.data, depth, &mut result) {
+        if let Some(result) = search_and_build_tree(&mut root, &target.data, depth) {
             println!("found!");
             return Some(result);
         }
@@ -170,30 +164,31 @@ pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
     None
 }
 
-fn search_and_build_tree(node: &mut PatternNode, target: &Data, depth: usize, result: &mut Vec<Pattern>) -> bool {
+fn search_and_build_tree(node: &mut PatternNode, target: &Data, depth: usize) -> Option<Vec<Pattern>> {
     if depth <= 0 {
         if node.pattern.data == *target {
-            result.push(node.pattern.clone());
-            return true;
+            return Some(vec![node.pattern.clone()]);
         }
-        return false;
+        return None;
     }
 
-    // TODO : too much memory consumption
-    //        trying sequencial move generation.
-    if node.children.len() <= 0 {
-        for p in node.pattern.possible_patterns() {
-            node.children.push(PatternNode { pattern: p, children: vec![] });
-        }
-    }
+    //if node.children.len() <= 0 {
+    //    for p in node.pattern.possible_patterns() {
+    //        node.children.push(PatternNode { pattern: p, children: vec![] });
+    //    }
+    //}
+    node.pattern.possible_patterns()
+        .map(|p| PatternNode { pattern: p, children: vec![] })
+        .find_map(|mut p| match search_and_build_tree(&mut p, target, depth-1) {
+            Some(mut v) => { v.push(p.pattern); Some(v) },
+            None    => None
+        })
 
-    for p in &mut node.children {
-        if search_and_build_tree(p, target, depth - 1, result) {
-            result.push(node.pattern.clone());
-            return true;
-        }
-    }
-
-    false
+    //for p in &mut node.children {
+    //    if search_and_build_tree(p, target, depth - 1, result) {
+    //        result.push(node.pattern.clone());
+    //        return true;
+    //    }
+    //}
 }
 
