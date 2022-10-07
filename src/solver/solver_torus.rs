@@ -31,11 +31,7 @@ impl Pattern {
         let mut pattern = Pattern {
             data: vec![0; n],
             n: n,
-            last_move: Move {
-                direction: Direction::Horizontal,
-                index: 0,
-                distance: 0
-            }
+            last_move: Move::default()
         };
         for i in 0..n {
             for j in 0..n {
@@ -54,6 +50,17 @@ impl Pattern {
             base.data[n-1] |= input[i] << 8*i;
         }
         base
+    }
+
+    pub fn from_input_all(input: &Data) -> Pattern {
+        let n = (input.len() as f32).sqrt() as usize;
+        let mut data: Data = vec![0_usize; n];
+        for irow in 0..n {
+            for icolumn in 0..n {
+                data[irow] |= input[irow*n + icolumn] << 8*icolumn;
+            }
+        }
+        Pattern { data: data, n: n, last_move: Move::default() }
     }
 
     pub fn apply_move(&self, m: &Move) -> Pattern {
@@ -109,6 +116,14 @@ impl Move {
             distance: (self.distance + n - 1) % n,
         }
     }
+
+    pub fn default() -> Move {
+        Move {
+            direction: Direction::Horizontal,
+            index: 0,
+            distance: 0
+        }
+    }
 }
 
 impl fmt::Display for Pattern {
@@ -137,18 +152,21 @@ struct PatternNode {
 
 pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
 
-    let target = Pattern::default(input.len());
+    let (n, start) = if input.len() >= 9 {
+        (
+            (input.len() as f32).sqrt() as usize,
+            Pattern::from_input_all(&input)
+        )
+    } else {
+        ( input.len(), Pattern::from_input(&input) )
+    };
+
+
+    let target = Pattern::default(n);
     println!("target:\n{}", target);
 
-    let start = Pattern::from_input(&input);
     println!("start:\n{}", start);
 
-    //let patterns = start.possible_patterns();
-    
-    //for p in start.possible_patterns() {
-    //    println!("{}", p);
-    //}
-    //return None;
     
     let mut root = PatternNode { pattern: start, children: vec![] };
     let mut result: Vec<Pattern> = vec![];
