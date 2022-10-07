@@ -3,6 +3,8 @@ use std::fmt;
 
 use itertools;
 
+use rayon::prelude::*;
+
 //use super::common::{ Data };
 type Data = Vec<usize>;
 
@@ -152,6 +154,7 @@ struct PatternNode {
 
 pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
 
+    // initialize target and start
     let (n, start) = if input.len() >= 9 {
         (
             (input.len() as f32).sqrt() as usize,
@@ -161,28 +164,48 @@ pub fn solve(input: &Vec<usize>) -> Option<Vec<Pattern>> {
         ( input.len(), Pattern::from_input(&input) )
     };
 
-
     let target = Pattern::default(n);
     println!("target:\n{}", target);
-
     println!("start:\n{}", start);
 
-    
-    let mut root = PatternNode { pattern: start, children: vec![] };
+    // detect obvious pattern ( start == target)
+    if target.data == start.data {
+        println!("found!");
+        return Some(vec![]);
+    }
+   
+    // search patterns
+    let mut root = PatternNode { pattern: start.clone(), children: vec![] };
     let mut result: Vec<Pattern> = vec![];
-    for depth in 0..(120/target.data.len()) {
+    for depth in 1..30 {
         println!("depth: {}", depth);
 
-        if let Some(result) = search_and_build_tree(&mut root, &target.data, depth) {
+        // search parallel for patterns just below root
+        let nodes: Vec<PatternNode> = start.possible_patterns()
+            .map(|p| PatternNode { pattern: p, children: vec![] })
+            .collect();
+
+        // need to know the number of nodes here, to use par_iter()
+        let result = nodes
+            .par_iter()
+            .map(|p| match search_and_build_tree(&p, &target.data, depth - 1) {
+                Some(mut v) => { v.push(p.pattern.clone()); Some(v) },
+                None        => None
+            })
+            .find_first(|x| x.is_some())
+            .flatten();
+
+        if let Some(mut v) = result {
             println!("found!");
-            return Some(result);
+            v.reverse();
+            return Some(v);
         }
     }
 
     None
 }
 
-fn search_and_build_tree(node: &mut PatternNode, target: &Data, depth: usize) -> Option<Vec<Pattern>> {
+fn search_and_build_tree(node: &PatternNode, target: &Data, depth: usize) -> Option<Vec<Pattern>> {
     if depth <= 0 {
         if node.pattern.data == *target {
             return Some(vec![node.pattern.clone()]);
@@ -197,7 +220,7 @@ fn search_and_build_tree(node: &mut PatternNode, target: &Data, depth: usize) ->
     //}
     node.pattern.possible_patterns()
         .map(|p| PatternNode { pattern: p, children: vec![] })
-        .find_map(|mut p| match search_and_build_tree(&mut p, target, depth-1) {
+        .find_map(|p| match search_and_build_tree(&p, target, depth-1) {
             Some(mut v) => { v.push(p.pattern); Some(v) },
             None    => None
         })
