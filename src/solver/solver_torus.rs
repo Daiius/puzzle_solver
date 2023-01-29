@@ -105,7 +105,7 @@ impl Pattern {
             DIRECTIONS.iter(), indices, distances
             )
             .map(|(&direction, index, distance)| Move { direction, index, distance })
-            .filter(|m| *m != self.last_move)
+            //.filter(move |m| *m != self.last_move.reverse(n))
             .map(|m| self.apply_move(&m))
     }
 }
